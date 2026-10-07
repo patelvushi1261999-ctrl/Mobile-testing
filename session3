@@ -1,0 +1,94 @@
+
+
+Task 1: Install Appium Inspector
+Install Appium Inspector on your system.
+
+Connect it to a running emulator or real device with any sample APK (e.g., Calculator or Notes app).
+
+Capture a screenshot of the element tree for the app’s main screen.
+
+This helps visualize the hierarchy of UI elements and their attributes.
+
+Task 2: Use UIAutomatorViewer
+Open UIAutomatorViewer and inspect the login screen of your sample app.
+
+Identify attributes for the username and password input fields.
+
+Example Output:
+Username Field:
+resource-id: com.example.app:id/username
+text: Enter Username
+content-desc: username_input
+
+Password Field:
+resource-id: com.example.app:id/password
+text: Enter Password
+content-desc: password_input
+Task 3: Locator Strategies
+Write locator strategies for 5 different elements on the home screen of your sample app. Each element should have at least two locator types.
+
+Example Code:
+
+python
+# 1. Login Button
+driver.find_element_by_id("com.example.app:id/login")
+driver.find_element_by_xpath("//android.widget.Button[@text='Login']")
+
+# 2. Settings Icon
+driver.find_element_by_accessibility_id("Settings")
+driver.find_element_by_class_name("android.widget.ImageView")
+
+# 3. Search Box
+driver.find_element_by_id("com.example.app:id/search")
+driver.find_element_by_xpath("//android.widget.EditText[@content-desc='search_box']")
+
+# 4. Profile Picture
+driver.find_element_by_accessibility_id("Profile")
+driver.find_element_by_class_name("android.widget.ImageView")
+
+# 5. Logout Button
+driver.find_element_by_id("com.example.app:id/logout")
+driver.find_element_by_xpath("//android.widget.Button[@text='Logout']")
+Description:
+
+id and resource-id are the most stable locators.
+
+accessibilityId is useful for accessibility-friendly apps.
+
+className and xpath are fallback options when unique IDs are missing.
+
+Task 4: Element Hierarchy & XPath
+Use Appium Inspector to capture the full element hierarchy.
+
+Write XPath expressions for parent, child, and sibling relationships.
+
+Example Code:
+
+python
+# Parent element
+driver.find_element_by_xpath("//android.widget.LinearLayout")
+
+# Child element
+driver.find_element_by_xpath("//android.widget.LinearLayout/android.widget.TextView")
+
+# Sibling element
+driver.find_element_by_xpath("//android.widget.TextView[@text='Username']/following-sibling::android.widget.EditText")
+
+# Nested button inside layout
+driver.find_element_by_xpath("//android.widget.LinearLayout/android.widget.Button[@text='Submit']")
+Description:
+
+XPath allows navigation through nested layouts.
+
+Parent-child-sibling relationships help target elements when IDs are missing.
+
+Task 5: Reliable Locators
+Inspect 3 interactive elements and decide which locator is most reliable.
+
+Example Notes:
+
+Login Button → id is most reliable because it’s unique and stable across updates.
+
+Username Input Box → resource-id is best since placeholder text may change but ID remains constant.
+
+Dark Mode Toggle → accessibilityId is reliable because accessibility labels are designed to remain stable.
