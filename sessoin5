@@ -1,0 +1,89 @@
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+from appium.webdriver.common.touch_action import TouchAction
+from appium.webdriver.common.key_event import KeyEvent
+from appium.webdriver.common.android_keycode import AndroidKey
+
+# =========================
+# Setup Desired Capabilities
+# =========================
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app = "C:/path/to/sample.apk"   # Replace with your test app path
+options.adb_exec_timeout = 120000
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+print("App launched successfully")
+time.sleep(3)
+
+# =========================
+# Task 1: Zomato-style Login
+# =========================
+try:
+    driver.find_element(AppiumBy.ID, "com.zomato.app:id/username").send_keys("testuser")
+    driver.find_element(AppiumBy.ID, "com.zomato.app:id/password").send_keys("wrongpass")
+    driver.find_element(AppiumBy.ID, "com.zomato.app:id/login_button").click()
+    error_element = driver.find_element(AppiumBy.ID, "com.zomato.app:id/error_message")
+    if error_element.is_displayed():
+        print("Error message displayed for wrong password")
+except Exception as e:
+    print("Zomato login test failed:", e)
+
+# =========================
+# Task 2: Flipkart-style Scroll
+# =========================
+try:
+    driver.find_element(
+        AppiumBy.ANDROID_UIAUTOMATOR,
+        'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().text("Wireless Earbuds"))'
+    ).click()
+    print("Wireless Earbuds item tapped")
+except Exception as e:
+    print("Flipkart scroll test failed:", e)
+
+# =========================
+# Task 3: WhatsApp-style Chat Input
+# =========================
+try:
+    chat_box = driver.find_element(AppiumBy.ID, "com.whatsapp.app:id/chat_input")
+    chat_box.send_keys("Hello Appium!")
+    driver.hide_keyboard()
+    entered_text = chat_box.get_attribute("text")
+    print("Entered message:", entered_text)
+except Exception as e:
+    print("WhatsApp chat input test failed:", e)
+
+# =========================
+# Task 4: Spotify-style Long Press
+# =========================
+try:
+    playlist_item = driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='My Playlist']")
+    action = TouchAction(driver)
+    action.long_press(playlist_item).release().perform()
+    add_to_queue_btn = driver.find_element(AppiumBy.ID, "com.spotify.app:id/add_to_queue")
+    if add_to_queue_btn.is_enabled():
+        print("Add to Queue button is enabled")
+except Exception as e:
+    print("Spotify long press test failed:", e)
+
+# =========================
+# Task 5: BookMyShow-style Back Button
+# =========================
+try:
+    driver.press_keycode(AndroidKey.BACK)
+    time.sleep(2)
+    modal = driver.find_element(AppiumBy.ID, "com.bookmyshow.app:id/modal")
+    if not modal.is_displayed():
+        print("Modal closed successfully with back button")
+except Exception as e:
+    print("BookMyShow back button test failed:", e)
+
+# =========================
+# End of Test
+# =========================
+driver.quit()
+print("Test execution completed")
