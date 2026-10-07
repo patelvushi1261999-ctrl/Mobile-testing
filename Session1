@@ -1,0 +1,937 @@
+Task 1: Install Appium Desktop
+Download Appium Desktop from https://appium.io.
+
+Install it on your system.
+
+Launch Appium Desktop and confirm the Appium Server starts without errors (logs should appear in the server window).
+
+
+Task 2: Install Appium Inspector
+Download Appium Inspector (separate tool).
+
+Open Appium Inspector.
+
+Enter server details:
+
+Host: 127.0.0.1
+
+Port: 4723
+
+Click Start Session → confirm Inspector launches successfully.
+
+
+Task 3: Connect Device/Emulator
+For Android:
+
+Start your emulator or connect a real device via USB.
+
+Run adb devices in terminal → confirm device is listed as device.
+
+Open Appium Desktop → confirm device is detected.
+
+
+Today
+import time
+import UiAutomator2Options
+from appium.options.android 
+from appium import webdriver
+drivers=UiAutomator2Options()
+drivers.platform_name="Android"
+drivers.device_name="emulator-5554"
+drivers.automation_name="UiAutomator2"
+drivers.app_package="com.android.settings"
+drivers.app_activity=".Settings"
+drivers.uiautomator2_server_launch_timeout=60000
+drivers.uiautomator2_server_install_timeout=60000
+drivers=webdriver.Remote("http://127.0.0.1:4723",
+                         options=drivers)
+print("appium server started")
+time.sleep(3)
+print(drivers.current_activity)
+print(drivers.page_source)
+drivers.quit()
+Your script is almost correct, but there are a few issues in the way you’re importing and using UiAutomator2Options. Let me walk you through the proper setup so your Appium test runs smoothly.
+
+01
+Fix the Import Statement
+Critical Fix
+The UiAutomator2Options class must be imported from the correct Appium package.
+
+from appium.options.android.uiautomator2 import UiAutomator2Options
+
+Replace import UiAutomator2Options with the correct import above
+
+Ensure you have Appium Python client installed (pip install Appium-Python-Client)
+
+02
+Initialize Options Properly
+Create an instance of UiAutomator2Options and set capabilities.
+
+Use options = UiAutomator2Options()
+
+Set values with options.platform_name = "Android"
+
+Continue setting device_name, automation_name, app_package, and app_activity
+
+03
+Pass Options to WebDriver
+Use the options object when creating the driver.
+
+Replace drivers=webdriver.Remote(..., options=drivers) with driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+Keep the server URL pointing to your local Appium server
+
+04
+Verify Appium Server is Running
+Ensure Appium server is started before running the script.
+
+Run appium in terminal to start the server
+
+Confirm it listens on http://127.0.0.1:4723
+
+05
+Run and Debug
+Execute the script and check logs for errors.
+
+Use print(driver.current_activity) to confirm activity
+
+Use print(driver.page_source) to inspect UI XML
+
+End with driver.quit() to close session
+
+By correcting the import and ensuring you initialize UiAutomator2Options properly, your script will connect to the emulator and launch the Android Settings app as expected. Would you like me to rewrite your full corrected script so you can copy-paste and run it directly?
+
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py" 
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py", line 3
+    from appium.options.android
+                               ^
+SyntaxError: invalid syntax
+
+Process finished with exit code 1
+The error is happening because your import statement is incomplete. In Python, you can’t just write:
+
+python
+from appium.options.android
+—that line is invalid syntax. You need to specify what you’re importing from that module. For Appium’s Python client, the correct way to use UiAutomator2Options is like this:
+
+python
+import time
+from appium import webdriver
+from appium.options.android.uiautomator2 import UiAutomator2Options
+
+# Create options object
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+
+# Start driver
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+✅ Key fixes:
+
+Use from appium.options.android.uiautomator2 import UiAutomator2Options
+
+Don’t reassign drivers twice; create options first, then pass it into webdriver.Remote.
+
+This should eliminate the SyntaxError and correctly launch the Settings app on your emulator.
+
+Do you want me to also show you how to inspect elements (like finding a button or text) once the Settings app opens? That way you can interact with it instead of just printing the page source.
+
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py" 
+Traceback (most recent call last):
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py", line 3, in <module>
+    from appium.options.android.uiautomator2 import UiAutomator2Options
+ImportError: cannot import name 'UiAutomator2Options' from 'appium.options.android.uiautomator2' (C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\options\android\uiautomator2\__init__.py)
+
+Process finished with exit code 1
+That ImportError means the class path you’re using doesn’t exist in your installed Appium Python client. The UiAutomator2Options class was introduced in Appium Python Client v2.x, but in your environment the package structure is different (likely you’re on v1.x or an older build).
+
+Here’s how you can fix it:
+
+1. Check your Appium Python client version
+Run this in your virtual environment:
+
+bash
+pip show Appium-Python-Client
+If it shows version 1.x, you won’t have UiAutomator2Options.
+
+2. Upgrade to the latest Appium Python client
+bash
+pip install --upgrade Appium-Python-Client
+This will give you v2.x, which includes UiAutomator2Options.
+
+3. Correct import for v2.x
+With the latest client, use:
+
+python
+from appium.options.android import UiAutomator2Options
+4. If you must stay on v1.x
+In older versions, you don’t use UiAutomator2Options. Instead, you pass a desired_capabilities dictionary directly:
+
+python
+from appium import webdriver
+import time
+
+desired_caps = {
+    "platformName": "Android",
+    "deviceName": "emulator-5554",
+    "automationName": "UiAutomator2",
+    "appPackage": "com.android.settings",
+    "appActivity": ".Settings",
+    "uiautomator2ServerLaunchTimeout": 60000,
+    "uiautomator2ServerInstallTimeout": 60000
+}
+
+driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", desired_caps)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+👉 So the fix depends on your Appium client version:
+
+Upgrade to v2.x → use UiAutomator2Options.
+
+Stay on v1.x → use desired_capabilities dict.
+
+Would you like me to give you a ready-to-run script for both versions side by side, so you can just pick whichever matches your installed client?
+
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py" 
+Traceback (most recent call last):
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py", line 14, in <module>
+    driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", desired_caps)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 260, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        command_executor=command_executor,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        client_config=client_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 266, in __init__
+    raise TypeError(
+        "missing 1 required keyword-only argument: 'options' (instance of driver `options.Options` class)"
+    )
+TypeError: missing 1 required keyword-only argument: 'options' (instance of driver `options.Options` class)
+
+Process finished with exit code 1
+The error you’re seeing (TypeError: missing 1 required keyword-only argument: 'options') happens because in Appium Python Client v2.x, you can’t pass desired_caps directly anymore. Instead, you must use an Options object (like UiAutomator2Options) and pass it via the options argument.
+
+Here’s how to fix it depending on your setup:
+
+✅ Correct script for Appium Python Client v2.x
+python
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+✅ Correct script for Appium Python Client v1.x (older)
+python
+import time
+from appium import webdriver
+
+desired_caps = {
+    "platformName": "Android",
+    "deviceName": "emulator-5554",
+    "automationName": "UiAutomator2",
+    "appPackage": "com.android.settings",
+    "appActivity": ".Settings",
+    "uiautomator2ServerLaunchTimeout": 60000,
+    "uiautomator2ServerInstallTimeout": 60000
+}
+
+driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", desired_capabilities=desired_caps)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+🔍 What you should do
+Run:
+
+bash
+pip show Appium-Python-Client
+If version is 2.x → use the first script (with UiAutomator2Options).
+
+If version is 1.x → use the second script (with desired_capabilities).
+
+👉 Right now, your error shows you’re on v2.x, but you tried using the old desired_caps style. That’s why Python complained about the missing options argument.
+
+Would you like me to also show you how to inspect and interact with elements (like clicking a button in Settings) once the app launches? That way you can move beyond just printing the page source.
+
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py" 
+Traceback (most recent call last):
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py", line 14, in <module>
+    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 260, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        command_executor=command_executor,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        client_config=client_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 296, in __init__
+    self.start_session(capabilities)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 371, in start_session
+    response = self.execute(RemoteCommand.NEW_SESSION, w3c_caps)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 506, in execute
+    self.error_handler.check_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py", line 232, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.WebDriverException: Message: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+Stacktrace:
+UnknownError: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at getResponseForW3CError (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\errors.js:829:36)
+    at asyncHandler (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\protocol.js:474:77)
+The above error is caused by
+Error: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at Timeout._onTimeout (file:///C:/Users/vrush/.appium/node_modules/appium-uiautomator2-driver/node_modules/teen_process/build/esm/lib/exec.js:120:43)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+
+Process finished with exit code 1
+This new error isn’t about your Python code anymore — it’s coming from Appium + ADB (Android Debug Bridge) timing out while trying to run a shell command on your emulator. The key part is:
+
+Code
+Error executing adbExec. Original error: '... timed out after 20000ms'. 
+Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+🔧 How to fix it
+Add adbExecTimeout capability  
+In your options, set a higher timeout (e.g., 120000 ms = 2 minutes):
+
+python
+from appium.options.android import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+options.adb_exec_timeout = 120000   # <-- increase timeout
+Check emulator performance
+
+Make sure your emulator is running and responsive before starting Appium.
+
+Close other heavy apps; slow machines cause ADB commands to hang.
+
+Try restarting the emulator and Appium server.
+
+Verify ADB path  
+Your log shows it’s using:
+
+Code
+C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe
+Run this manually in a terminal:
+
+bash
+adb devices
+Ensure your emulator (emulator-5554) appears as device (not offline).
+
+Update Android SDK & Appium  
+Sometimes outdated SDK tools or Appium drivers cause these timeouts.
+
+Update Android SDK platform-tools (adb).
+
+Update Appium server and Appium Python client.
+
+👉 In short: add options.adb_exec_timeout = 120000 to your script, restart emulator + Appium, and confirm adb devices shows your emulator as connected. That should stop the timeout error.
+
+Would you like me to give you a ready-to-run corrected script with the adbExecTimeout fix included, so you can copy-paste and test immediately?
+
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py" 
+Traceback (most recent call last):
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py", line 15, in <module>
+    drivers=webdriver.Remote("http://127.0.0.1:4723",
+                             options=drivers)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 260, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        command_executor=command_executor,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        client_config=client_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 296, in __init__
+    self.start_session(capabilities)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 371, in start_session
+    response = self.execute(RemoteCommand.NEW_SESSION, w3c_caps)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 506, in execute
+    self.error_handler.check_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py", line 232, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.WebDriverException: Message: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+Stacktrace:
+UnknownError: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at getResponseForW3CError (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\errors.js:829:36)
+    at asyncHandler (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\protocol.js:474:77)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+The above error is caused by
+Error: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at Timeout._onTimeout (file:///C:/Users/vrush/.appium/node_modules/appium-uiautomator2-driver/node_modules/teen_process/build/esm/lib/exec.js:120:43)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+
+Process finished with exit code 1
+The traceback shows Appium is connecting, but ADB commands inside your emulator are timing out. This is a device/emulator performance issue, not a Python syntax problem. Here’s how you can fix it:
+
+✅ Update your script with adbExecTimeout
+Add this capability to give ADB more time:
+
+python
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+options.adb_exec_timeout = 120000   # <-- increase timeout to 2 minutes
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+🔍 Other things to check
+Emulator responsiveness
+
+Run adb devices in a terminal. Your emulator should show as emulator-5554 device.
+
+If it shows offline, restart the emulator.
+
+Restart ADB
+
+bash
+adb kill-server
+adb start-server
+adb devices
+Update SDK tools  
+Make sure your Android SDK platform-tools (adb.exe) are up to date.
+
+System performance  
+If your PC is slow or overloaded, ADB commands can hang. Close heavy apps before running tests.
+
+👉 In short: add options.adb_exec_timeout = 120000, restart your emulator and Appium server, and confirm adb devices shows the emulator as connected. That should stop the timeout error.
+
+Would you like me to also show you how to locate and click elements in the Settings app once it launches, so you can move beyond just printing the page source?
+
+import time
+
+from appium.options.android import UiAutomator2Options
+from appium import webdriver
+from appium.webdriver.common.appiumby import AppiumBy
+
+drivers=UiAutomator2Options()
+drivers.platform_name="Android"
+drivers.device_name="emulator-5554"
+drivers.automation_name="UiAutomator2"
+drivers.app_package="com.android.settings"
+drivers.app_activity=".Settings"
+drivers.uiautomator2_server_launch_timeout=60000
+drivers.uiautomator2_server_install_timeout=60000
+drivers=webdriver.Remote("http://127.0.0.1:4723",
+                         options=drivers)
+options.adb_exec_timeout = 120000   # <-- increase timeout
+
+print("appium server strated")
+time.sleep(3)
+element=drivers.find_element(AppiumBy.XPATH,"//android.widget.TextView[@resource-id='android:id/title' and @text='Network & internet']")
+print("element attribute")
+print("Text:",element.get_attribute("text"))
+print("class",element.get_attribute("className"))
+print("enabled",element.get_attribute("enabled"))
+print("displayed",element.get_attribute("displayed"))
+element.click()
+print("network & internet tab opened")
+time.sleep(3)
+drivers.quit()
+I see what’s happening in your script — you mixed up the options object and the driver object. Right now you’re creating drivers = UiAutomator2Options() and then overwriting it with webdriver.Remote(...). That makes it confusing, and also your adb_exec_timeout line is being applied to a variable (options) that doesn’t exist in your code.
+
+Here’s the corrected version you can copy‑paste and run:
+
+python
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+
+# Create options object
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+options.adb_exec_timeout = 120000   # <-- increase timeout
+
+# Start driver
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+
+# Find element by XPath
+element = driver.find_element(
+    AppiumBy.XPATH,
+    "//android.widget.TextView[@resource-id='android:id/title' and @text='Network & internet']"
+)
+
+print("Element attributes:")
+print("Text:", element.get_attribute("text"))
+print("Class:", element.get_attribute("className"))
+print("Enabled:", element.get_attribute("enabled"))
+print("Displayed:", element.get_attribute("displayed"))
+
+# Click the element
+element.click()
+print("Network & internet tab opened")
+
+time.sleep(3)
+driver.quit()
+Key fixes:
+Use options for UiAutomator2Options, not drivers.
+
+Pass options into webdriver.Remote.
+
+Apply options.adb_exec_timeout = 120000 to the same options object.
+
+Keep driver separate for interacting with the app.
+
+This should launch the Settings app, locate the “Network & internet” item, print its attributes, and click it.
+
+👉 Once this works, you can extend it to interact with other tabs or settings. Do you want me to show you how to chain multiple clicks (like opening Wi‑Fi and toggling it on/off) after this step?
+
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py" 
+Traceback (most recent call last):
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_inspecting_element.py", line 15, in <module>
+    drivers=webdriver.Remote("http://127.0.0.1:4723",
+                             options=drivers)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 260, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        command_executor=command_executor,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        client_config=client_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 296, in __init__
+    self.start_session(capabilities)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 371, in start_session
+    response = self.execute(RemoteCommand.NEW_SESSION, w3c_caps)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 506, in execute
+    self.error_handler.check_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py", line 232, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.WebDriverException: Message: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+Stacktrace:
+UnknownError: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at getResponseForW3CError (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\errors.js:829:36)
+    at asyncHandler (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\protocol.js:474:77)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:615:9)
+The above error is caused by
+Error: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 20000ms'. Try to increase the 20000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at Timeout._onTimeout (file:///C:/Users/vrush/.appium/node_modules/appium-uiautomator2-driver/node_modules/teen_process/build/esm/lib/exec.js:120:43)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+
+Process finished with exit code 1
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+options.adb_exec_timeout = 120000   # <-- increase timeout
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+I can see why you’re still hitting that timeout error — your script is fine now, but the emulator/Appium/ADB side is choking on the hidden_api_policy commands. That’s why it keeps saying “timed out after 20000ms” even though you added adb_exec_timeout.
+
+Here’s how you can stabilize it:
+
+✅ Script (clean version)
+Make sure you’re using options consistently:
+
+python
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+options.adb_exec_timeout = 120000   # give ADB 2 minutes
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+🔍 Emulator/ADB fixes
+Check emulator state  
+Run:
+
+bash
+adb devices
+Make sure emulator-5554 shows as device (not offline).
+
+Restart ADB
+
+bash
+adb kill-server
+adb start-server
+adb devices
+Cold boot the emulator  
+In Android Studio → AVD Manager → select your emulator → “Cold Boot Now”.
+This clears stuck processes.
+
+Update platform-tools  
+Run SDK Manager and update Android SDK Platform-Tools (adb). Old versions often hang.
+
+System performance  
+If your PC is under heavy load, ADB commands can stall. Close other apps before running tests.
+
+👉 In short: your Python code is correct now. The timeout is happening because ADB on your emulator is slow or stuck. Restarting ADB/emulator and updating platform-tools usually fixes it.
+
+Do you want me to show you how to verify connectivity step-by-step with adb commands before running Appium, so you can be sure the emulator is healthy?
+
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app_package = "com.android.settings"
+options.app_activity = ".Settings"
+options.uiautomator2_server_launch_timeout = 60000
+options.uiautomator2_server_install_timeout = 60000
+options.adb_exec_timeout = 120000   # <-- increase timeout
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+print("Appium server started")
+time.sleep(3)
+print(driver.current_activity)
+print(driver.page_source)
+
+driver.quit()
+"C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Scripts\python.exe" "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_attriubute.py" 
+Traceback (most recent call last):
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\appium\appium_attriubute.py", line 14, in <module>
+    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 260, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        command_executor=command_executor,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        client_config=client_config,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 296, in __init__
+    self.start_session(capabilities)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\appium\webdriver\webdriver.py", line 371, in start_session
+    response = self.execute(RemoteCommand.NEW_SESSION, w3c_caps)
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 506, in execute
+    self.error_handler.check_response(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\vrush\PycharmProjects\PythonProject\Android Testing\.venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py", line 232, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.WebDriverException: Message: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 120000ms'. Try to increase the 120000ms adb execution timeout represented by 'adbExecTimeout' capability
+Stacktrace:
+UnknownError: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 120000ms'. Try to increase the 120000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at getResponseForW3CError (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\errors.js:829:36)
+    at asyncHandler (C:\Users\vrush\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\protocol\protocol.js:474:77)
+The above error is caused by
+Error: Error executing adbExec. Original error: 'Command ''C:\Users\vrush\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy'' timed out after 120000ms'. Try to increase the 120000ms adb execution timeout represented by 'adbExecTimeout' capability
+    at Timeout._onTimeout (file:///C:/Users/vrush/.appium/node_modules/appium-uiautomator2-driver/node_modules/teen_process/build/esm/lib/exec.js:120:43)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+
+Process finished with exit code 1
+Your Python code is now correct — the error you’re seeing is purely an ADB / emulator issue. Appium is trying to run hidden API policy commands on your emulator, but they’re hanging and timing out. This happens often with slow or misconfigured emulators.
+
+Here’s a step‑by‑step way to fix it:
+
+01
+Verify Emulator Connectivity
+Ensure your emulator is properly connected to ADB before Appium starts.
+
+Run in terminal: adb devices
+
+Confirm emulator-5554 shows as device
+
+If it shows offline, restart the emulator
+
+02
+Restart ADB Server
+ADB may be stuck; restarting clears stale connections.
+
+Run in terminal:
+
+adb kill-server
+
+adb start-server
+
+adb devices again to confirm
+
+03
+Cold Boot Emulator
+A cold boot clears cached state that can block Appium commands.
+
+Android Studio → AVD Manager → Select emulator → Cold Boot Now
+
+Close emulator completely
+
+Start with Cold Boot Now instead of Quick Boot
+
+04
+Update Platform Tools
+Outdated ADB often causes hidden API policy timeouts.
+
+Android Studio → SDK Manager → SDK Tools
+
+Update Android SDK Platform-Tools
+
+Verify adb version shows latest
+
+05
+Adjust Appium Capabilities
+Give Appium more time and skip hidden API policy reset if needed.
+
+Already set adbExecTimeout = 120000
+
+Add: options.set_capability("ignoreHiddenApiPolicyError", True)
+
+This prevents Appium from running the failing shell command
+
+Sources: Appium official docs, Android developer ADB troubleshooting guides
+
+🔑 Key Fix
+Add this line to your script before starting the driver:
+
+python
+options.set_capability("ignoreHiddenApiPolicyError", True)
+This tells Appium to skip the problematic hidden API policy reset that’s timing out on your emulator.
+
+👉 Try these steps in order: check adb devices, restart ADB, cold boot the emulator, update platform-tools, and finally add the ignoreHiddenApiPolicyError capability. That combination usually resolves this exact timeout.
+
+Would you like me to show you the final corrected script with that capability included, so you can copy‑paste and run it directly?
+
+Tasks
+1.
+Install Appium Desktop on your system and launch it to confirm the Appium Server starts without errors.
+2.
+Install Appium Inspector and use it to connect to your running Appium Server.<br><br><em><strong>Hint:</strong> Open Appium Inspector, enter the server details (host and port), and click Start Session to check if the Inspector launches successfully.</em>
+3.
+Connect your Android or iOS device (or emulator) to your computer and use Appium Desktop to confirm the device is detected.<br><br><em><strong>Hint:</strong> For Android, use adb devices in the terminal to verify detection before starting Appium.</em>
+4.
+Create a table comparing Native, Hybrid, and Web mobile apps by listing at least 3 features or differences for each type, using examples from apps you use daily (e.g., Instagram, Flipkart, IRCTC).
+5.
+Draw a simple diagram (hand-drawn or digital) showing the architecture of Appium, labeling the Appium Client, Appium Server, and Device/Emulator, and briefly explain the data flow in your own words.   give me  the assigmnet fille
+Here’s a structured assignment file you can use. I’ve broken it into clear tasks with explanations, a comparison table, and a simple diagram description.
+
+📘 Assignment: Appium Setup and Basics
+Task 1: Install Appium Desktop
+Download Appium Desktop from the official site (https://appium.io).
+
+Install it on your system.
+
+Launch Appium Desktop → confirm the Appium Server starts without errors (you should see logs in the server window).
+
+Task 2: Install Appium Inspector
+Download Appium Inspector (separate tool).
+
+Open Appium Inspector.
+
+Enter server details:
+
+Host: 127.0.0.1
+
+Port: 4723
+
+Click Start Session → confirm Inspector launches successfully.
+
+Task 3: Connect Device/Emulator
+For Android:
+
+Start your emulator or connect a real device via USB.
+
+Run adb devices in terminal → confirm device is listed as device.
+
+Open Appium Desktop → confirm device is detected.
+
+Task 4: Comparison Table — Native vs Hybrid vs Web Apps
+Type of App	Features	Examples
+Native Apps	- Built for a specific platform (Android/iOS) - Access to device hardware (camera, GPS) - Installed via app stores	Instagram, WhatsApp
+Hybrid Apps	- Combination of native + web technologies - Runs inside a native container - Can access limited device features	Flipkart, IRCTC
+Web Apps	- Runs in mobile browser - No installation required - Limited access to device features	Gmail (web), Facebook (mobile site)
+
+
+Task 5: Appium Architecture Diagram (Simple)
+Diagram (textual description):
+
+Code
+[ Appium Client (Python/Java/Test Scripts) ]
+                |
+                v
+[ Appium Server (Node.js) ]
+                |
+                v
+[ Device / Emulator (Android/iOS) ]
+Explanation of Data Flow:
+
+The Appium Client sends automation commands (like “click button”) to the Appium Server.
+
+The Appium Server translates these commands into platform-specific instructions.
+
+The Device/Emulator executes the commands and sends results back to the server.
+
+The server returns responses to the client, completing the automation cycle.
+
+✅ With this, you have a complete assignment file: installation tasks, Inspector setup, device connection, comparison table, and architecture diagram explanation.
+
+Would you like me to also create a ready-to-submit Word/PDF formatted version of this assignment so you can directly turn it in?
+
+write all detalis in one file
+Here’s your full assignment written neatly in one file, with all tasks combined into a single structured document:
+
+📘 Appium Assignment
+Task 1: Install Appium Desktop
+Download Appium Desktop from https://appium.io.
+
+Install it on your system.
+
+Launch Appium Desktop and confirm the Appium Server starts without errors (logs should appear in the server window).
+
+Task 2: Install Appium Inspector
+Download Appium Inspector (separate tool).
+
+Open Appium Inspector.
+
+Enter server details:
+
+Host: 127.0.0.1
+
+Port: 4723
+
+Click Start Session → confirm Inspector launches successfully.
+
+Task 3: Connect Device/Emulator
+For Android:
+
+Start your emulator or connect a real device via USB.
+
+Run adb devices in terminal → confirm device is listed as device.
+
+Open Appium Desktop → confirm device is detected.
+
+Task 4: Comparison Table — Native vs Hybrid vs Web Apps
+Native Apps  
+These are applications built specifically for a particular platform like Android or iOS. They have full access to device hardware such as the camera, GPS, and sensors. Native apps are installed directly from app stores. Examples include Instagram and WhatsApp.
+
+Hybrid Apps  
+Hybrid apps combine native and web technologies. They run inside a native container but use web views to display content. They can access some device features but not as extensively as native apps. Examples are Flipkart and IRCTC.
+
+Web Apps  
+Web apps run entirely in a mobile browser. They don’t require installation and are accessed via URLs. Their access to device features is limited compared to native or hybrid apps. Examples include Gmail when accessed through a browser and Facebook’s mobile site.
+
+
+
+
+
+Task 5: Appium Architecture Diagram & Explanation
+Diagram (textual representation):
+
+Code
+[ Appium Client (Python/Java/Test Scripts) ]
+                |
+                v
+[ Appium Server (Node.js) ]
+                |
+                v
+[ Device / Emulator (Android/iOS) ]
