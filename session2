@@ -1,0 +1,62 @@
+Task 1: Install JDK
+Install JDK 11 or higher on your system.
+
+Set the JAVA_HOME environment variable.
+
+Verify installation:
+
+Run java -version → should display installed version.
+
+Run echo %JAVA_HOME% (Windows) or echo $JAVA_HOME (Mac/Linux) → should display JDK path.
+
+
+Task 2: Install Android Studio & SDKs
+Download and install Android Studio.
+
+Open SDK Manager inside Android Studio.
+
+Install the latest Android SDK Platform and Android SDK Tools.
+
+Take a screenshot of the installed SDKs in SDK Manager.
+
+
+Task 3: Create Android Virtual Device (AVD)
+Open AVD Manager in Android Studio.
+
+Create a new AVD with a profile similar to your phone (e.g., Pixel 4, Android 11).
+
+Launch the emulator and show the home screen.
+
+Capture a screenshot of the emulator running.
+
+
+Task 4: Connect Real Android Device
+Enable USB debugging on your Android device (Developer Options → USB Debugging).
+
+Connect your device via USB.
+
+Run adb devices in terminal → confirm your device is detected.
+
+If device is not detected, install the required drivers.
+
+Capture a screenshot of the terminal showing your device listed.
+
+
+Task 5: Install Node.js & Appium
+Install Node.js v14 or above.
+
+Verify installation:
+
+Run node -v and npm -v.
+
+Install Appium globally:
+
+bash
+npm install -g appium
+Start Appium server:
+
+bash
+appium
+Capture terminal output showing Appium server running and listening on port 4723.
+
+
