@@ -1,0 +1,83 @@
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+
+# =========================
+# Setup Desired Capabilities
+# =========================
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app = "C:/path/to/sample.apk"   # Replace with your test app path
+options.adb_exec_timeout = 120000
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+print("App launched successfully")
+time.sleep(3)
+
+# =========================
+# Task 1: Date Picker (Food Delivery App Sign-up)
+# =========================
+try:
+    driver.find_element(AppiumBy.ID, "com.fooddelivery.app:id/date_picker").click()
+    driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='07']").click()   # Day
+    driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='October']").click()  # Month
+    driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='1995']").click()  # Year
+    driver.find_element(AppiumBy.ID, "android:id/button1").click()  # OK button
+    print("Birthday selected from date picker")
+except Exception as e:
+    print("Date picker selection failed:", e)
+
+# =========================
+# Task 2: Cuisine Dropdown (Zomato-style)
+# =========================
+try:
+    driver.find_element(AppiumBy.ID, "com.zomato.app:id/cuisine_dropdown").click()
+    driver.find_element(AppiumBy.XPATH, "//android.widget.CheckedTextView[@text='Chinese']").click()
+    print("Cuisine 'Chinese' selected from dropdown")
+except Exception as e:
+    print("Cuisine dropdown selection failed:", e)
+
+# =========================
+# Task 3: Toast Message (Paytm-style)
+# =========================
+try:
+    driver.find_element(AppiumBy.ID, "com.paytm.app:id/login_button").click()
+    toast_message = driver.find_element(AppiumBy.XPATH, "//android.widget.Toast[1]").get_attribute("name")
+    print("Toast message displayed:", toast_message)
+except Exception as e:
+    print("Toast message detection failed:", e)
+
+# =========================
+# Task 4: Switch Context to WebView (BookMyShow-style)
+# =========================
+try:
+    contexts = driver.contexts
+    print("Available contexts:", contexts)
+    driver.switch_to.context("WEBVIEW_com.bookmyshow.app")  # Switch to WebView
+    book_btn = driver.find_element(AppiumBy.XPATH, "//button[text()='Book Tickets']")
+    if book_btn.is_displayed():
+        print("'Book Tickets' button found inside WebView")
+    driver.switch_to.context("NATIVE_APP")  # Switch back to native
+except Exception as e:
+    print("WebView context switch failed:", e)
+
+# =========================
+# Task 5: Notification Panel (Swiggy-style)
+# =========================
+try:
+    # Simulate pulling down notification panel
+    driver.open_notifications()
+    time.sleep(2)
+    notification = driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Order Delivered']")
+    if notification.is_displayed():
+        print("Notification 'Order Delivered' found")
+except Exception as e:
+    print("Notification check failed:", e)
+
+# =========================
+# End of Test
+# =========================
+driver.quit()
