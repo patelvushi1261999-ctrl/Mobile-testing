@@ -1,0 +1,73 @@
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+
+# =========================
+# Task 1: Launch Myntra App
+# =========================
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app = "C:/path/to/myntra.apk"   # Replace with actual path to Myntra APK
+options.adb_exec_timeout = 120000       # Increase timeout for slow devices
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+print("Myntra app launched successfully")
+time.sleep(3)
+
+# =========================
+# Task 2: Zomato Login Fields
+# =========================
+# Example: Enter mock username and password using resource-id
+try:
+    driver.find_element(AppiumBy.ID, "com.zomato.app:id/username").send_keys("testuser")
+    driver.find_element(AppiumBy.ID, "com.zomato.app:id/password").send_keys("password123")
+    print("Entered username and password in Zomato app")
+except Exception as e:
+    print("Could not locate Zomato login fields:", e)
+
+# =========================
+# Task 3: Flipkart Clone Login
+# =========================
+try:
+    driver.find_element(AppiumBy.ID, "com.flipkart.clone:id/username").send_keys("flipuser")
+    driver.find_element(AppiumBy.ID, "com.flipkart.clone:id/password").send_keys("flip123")
+    driver.find_element(AppiumBy.ID, "com.flipkart.clone:id/login_button").click()
+    print("Flipkart clone login automated")
+except Exception as e:
+    print("Flipkart clone login failed:", e)
+
+# =========================
+# Task 4: Clear Pre-Filled Text
+# =========================
+try:
+    username_field = driver.find_element(AppiumBy.ID, "com.flipkart.clone:id/username")
+    username_field.clear()  # Clear any pre-filled text
+    username_field.send_keys("newuser")
+    print("Cleared and re-entered username")
+except Exception as e:
+    print("Could not clear username field:", e)
+
+# =========================
+# Task 5: Debug Swiggy Password Field
+# =========================
+try:
+    # First attempt with resource-id
+    driver.find_element(AppiumBy.ID, "com.swiggy.app:id/password").send_keys("swiggy123")
+    print("Password entered using ID locator")
+except:
+    try:
+        # Fallback to XPath if ID fails
+        driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@content-desc='password']").send_keys("swiggy123")
+        print("Password entered using XPath locator")
+    except Exception as e:
+        print("Could not locate Swiggy password field with either locator:", e)
+
+# =========================
+# End of Test
+# =========================
+time.sleep(3)
+driver.quit()
+print("Test execution completed")
