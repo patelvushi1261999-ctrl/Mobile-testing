@@ -1,0 +1,87 @@
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+from appium.webdriver.common.touch_action import TouchAction
+from appium.webdriver.common.multi_action import MultiAction
+
+# =========================
+# Setup Desired Capabilities
+# =========================
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app = "C:/path/to/sample.apk"   # Replace with your test app path
+options.adb_exec_timeout = 120000
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+print("App launched successfully")
+time.sleep(3)
+
+# =========================
+# Task 1: Flipkart-style Image Carousel Swipe
+# =========================
+try:
+    action = TouchAction(driver)
+    # Example coordinates: swipe left-to-right across carousel
+    action.press(x=100, y=500).wait(500).move_to(x=600, y=500).release().perform()
+    print("Swiped carousel left-to-right, next image should be displayed")
+except Exception as e:
+    print("Carousel swipe failed:", e)
+
+# =========================
+# Task 2: Zomato-style Vertical Scroll
+# =========================
+try:
+    action = TouchAction(driver)
+    # Example coordinates: swipe bottom-to-top to reveal hidden banner
+    action.press(x=300, y=1000).wait(500).move_to(x=300, y=300).release().perform()
+    print("Scrolled vertically to reveal hidden offer banner")
+except Exception as e:
+    print("Vertical scroll failed:", e)
+
+# =========================
+# Task 3: Spotify-style Drag and Drop
+# =========================
+try:
+    # Example: drag playlist item from position 3 to position 1
+    source = driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Song 3']")
+    target = driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Song 1']")
+    action = TouchAction(driver)
+    action.long_press(source).move_to(target).release().perform()
+    print("Dragged playlist item from position 3 to 1")
+except Exception as e:
+    print("Drag and drop failed:", e)
+
+# =========================
+# Task 4: Pinch-to-Zoom Gesture (MultiTouch)
+# =========================
+try:
+    # Example coordinates for pinch gesture on a map
+    action1 = TouchAction(driver).press(x=200, y=400).move_to(x=100, y=300).release()
+    action2 = TouchAction(driver).press(x=400, y=400).move_to(x=500, y=500).release()
+    zoom_action = MultiAction(driver)
+    zoom_action.add(action1, action2)
+    zoom_action.perform()
+    print("Pinch-to-zoom gesture performed on map section")
+except Exception as e:
+    print("Pinch-to-zoom failed:", e)
+
+# =========================
+# Task 5: Coordinate-based Tap (Myntra-style Add to Cart)
+# =========================
+try:
+    action = TouchAction(driver)
+    # Example coordinates for Add to Cart button
+    action.tap(x=550, y=1200).perform()
+    print("Tapped on Add to Cart button using coordinates")
+except Exception as e:
+    print("Coordinate-based tap failed:", e)
+
+# =========================
+# End of Test
+# =========================
+time.sleep(3)
+driver.quit()
+print("Test execution completed")
