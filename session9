@@ -1,0 +1,60 @@
+import unittest
+import time
+from appium import webdriver
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+
+class MobileAppTests(unittest.TestCase):
+
+    def setUp(self):
+        """Setup before each test (similar to @BeforeMethod in TestNG)."""
+        options = UiAutomator2Options()
+        options.platform_name = "Android"
+        options.device_name = "emulator-5554"
+        options.automation_name = "UiAutomator2"
+        options.app = "C:/path/to/irctc.apk"   # Replace with actual IRCTC APK path
+        options.adb_exec_timeout = 120000
+
+        self.driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+        print("✅ App launched successfully")
+
+    def tearDown(self):
+        """Teardown after each test (similar to @AfterMethod in TestNG)."""
+        if self.driver:
+            self.driver.quit()
+            print("✅ Driver quit successfully")
+
+    # =========================
+    # Task 2: Flipkart-style Login
+    # =========================
+    def test_flipkart_login(self):
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/username").send_keys("testuser")
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/password").send_keys("password123")
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/login_button").click()
+
+        home_screen = self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/home")
+        self.assertTrue(home_screen.is_displayed(), "Home screen should be displayed after login")
+        print("✅ Flipkart login test passed")
+
+    # =========================
+    # Task 3: Zomato-style Search
+    # =========================
+    def test_zomato_search(self):
+        self.driver.find_element(AppiumBy.ID, "com.zomato.app:id/search_box").send_keys("Pizza Hut")
+        self.driver.find_element(AppiumBy.ID, "com.zomato.app:id/search_button").click()
+
+        result = self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Pizza Hut']")
+        self.assertTrue(result.is_displayed(), "Search result should display 'Pizza Hut'")
+        print("✅ Zomato search test passed")
+
+
+# =========================
+# Parallel Execution (Task 4)
+# =========================
+# In Python, parallel execution is handled by pytest-xdist or nose2 plugins.
+# Example: run tests in parallel on two emulators using:
+#   pytest -n 2 test_mobile_app.py
+# This mimics TestNG's parallel execution via testng.xml.
+
+if __name__ == "__main__":
+    unittest.main()
