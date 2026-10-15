@@ -1,0 +1,104 @@
+from appium import webdriver
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementNotInteractableException, TimeoutException
+import time
+
+# -------------------------------
+# Desired Capabilities (generic example)
+# -------------------------------
+desired_caps = {
+    "platformName": "Android",
+    "deviceName": "Android Emulator",
+    "automationName": "UiAutomator2",
+    "appPackage": "com.example",  # replace with actual package
+    "appActivity": "com.example.MainActivity"  # replace with actual activity
+}
+
+driver = webdriver.Remote("http://localhost:4723/wd/hub", desired_caps)
+
+# -------------------------------
+# Task 1: Zomato App - Implicit Wait
+# -------------------------------
+driver.implicitly_wait(10)  # applies globally
+driver.launch_app()
+
+try:
+    search_btn = driver.find_element(AppiumBy.XPATH, "//android.widget.Button[@text='Search']")
+    print("Search button displayed:", search_btn.is_displayed())
+except Exception as e:
+    print("Search button not found:", e)
+
+# -------------------------------
+# Task 2: Flipkart-style Login - Explicit Wait
+# -------------------------------
+driver.launch_app()
+
+try:
+    phone_input = driver.find_element(AppiumBy.ID, "com.flipkart:id/phone_input")
+    phone_input.send_keys("9999999999")
+
+    # Explicit wait for OTP field
+    wait = WebDriverWait(driver, 15)
+    otp_field = wait.until(EC.visibility_of_element_located((AppiumBy.ID, "com.flipkart:id/otp_input")))
+    otp_field.send_keys("123456")
+    print("OTP entered successfully")
+except TimeoutException:
+    print("OTP field did not appear in time")
+
+# -------------------------------
+# Task 3: BookMyShow-style Polling Strategy
+# -------------------------------
+driver.launch_app()
+
+attempts = 0
+clicked = False
+while attempts < 4 and not clicked:
+    try:
+        wait = WebDriverWait(driver, 2)
+        book_now = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//android.widget.Button[@text='Book Now']")))
+        book_now.click()
+        print("Book Now clicked successfully")
+        clicked = True
+    except (ElementNotInteractableException, TimeoutException):
+        print(f"Attempt {attempts+1}: Book Now not clickable yet")
+        attempts += 1
+
+# -------------------------------
+# Task 4: Myntra-style Add to Cart (Fix flaky test)
+# -------------------------------
+driver.launch_app()
+
+try:
+    # Instead of direct find_element (flaky), use explicit wait
+    wait = WebDriverWait(driver, 20)
+    add_to_cart = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//android.widget.Button[@text='Add to Cart']")))
+    add_to_cart.click()
+    print("Add to Cart clicked successfully")
+except TimeoutException:
+    print("Add to Cart button not clickable in time")
+
+# -------------------------------
+# Task 5: Swiggy-style Form Submission Sync
+# -------------------------------
+driver.launch_app()
+
+try:
+    address_input = driver.find_element(AppiumBy.ID, "com.swiggy:id/address_input")
+    address_input.send_keys("123 Test Street")
+    submit_btn = driver.find_element(AppiumBy.ID, "com.swiggy:id/submit_address")
+    submit_btn.click()
+
+    # Explicit wait for payment screen
+    wait = WebDriverWait(driver, 15)
+    pay_now = wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//android.widget.Button[@text='Pay Now']")))
+    assert pay_now.is_displayed(), "Pay Now button not displayed"
+    print("Payment screen loaded, Pay Now button visible")
+except TimeoutException:
+    print("Payment screen did not load in time")
+
+# -------------------------------
+# Close driver
+# -------------------------------
+driver.quit()
