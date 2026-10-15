@@ -1,0 +1,91 @@
+import configparser
+import openpyxl
+import pytest
+from appium import webdriver
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# -------------------------------
+# BaseMobileTest
+# -------------------------------
+class BaseMobileTest:
+    def setup(self):
+        config = configparser.ConfigParser()
+        config.read("config.properties")
+
+        desired_caps = {
+            "platformName": "Android",
+            "deviceName": config.get("Appium", "deviceName"),
+            "appPackage": config.get("Appium", "appPackage"),
+            "appActivity": config.get("Appium", "appActivity"),
+            "automationName": "UiAutomator2"
+        }
+
+        self.driver = webdriver.Remote(config.get("Appium", "appiumServerURL"), desired_caps)
+
+    def teardown(self):
+        if self.driver:
+            self.driver.quit()
+
+# -------------------------------
+# LoginPage (POM)
+# -------------------------------
+class LoginPage:
+    def __init__(self, driver):
+        self.driver = driver
+
+    def enter_username(self, username):
+        self.driver.find_element(AppiumBy.ID, "com.zomato:id/username").send_keys(username)
+
+    def enter_password(self, password):
+        self.driver.find_element(AppiumBy.ID, "com.zomato:id/password").send_keys(password)
+
+    def tap_login(self):
+        self.driver.find_element(AppiumBy.ID, "com.zomato:id/login_button").click()
+
+# -------------------------------
+# WaitUtils
+# -------------------------------
+class WaitUtils:
+    @staticmethod
+    def wait_for_element_visible(driver, locator, timeout=10):
+        wait = WebDriverWait(driver, timeout)
+        return wait.until(EC.visibility_of_element_located(locator))
+
+# -------------------------------
+# ExcelReader
+# -------------------------------
+class ExcelReader:
+    @staticmethod
+    def read_excel(file_path, sheet_name):
+        workbook = openpyxl.load_workbook(file_path)
+        sheet = workbook[sheet_name]
+
+        data = []
+        for row in sheet.iter_rows(min_row=2, values_only=True):  # skip header
+            data.append(row)
+        return data
+
+# -------------------------------
+# Test Class (pytest)
+# -------------------------------
+class TestLogin(BaseMobileTest):
+
+    def setup_method(self):
+        self.setup()
+
+    def teardown_method(self):
+        self.teardown()
+
+    @pytest.mark.parametrize("username,password", ExcelReader.read_excel("testdata.xlsx", "Sheet1"))
+    def test_login(self, username, password):
+        login_page = LoginPage(self.driver)
+        login_page.enter_username(username)
+        login_page.enter_password(password)
+        login_page.tap_login()
+
+        # Example assertion: wait for home screen element
+        home_locator = (AppiumBy.ID, "com.zomato:id/home")
+        element = WaitUtils.wait_for_element_visible(self.driver, home_locator, 15)
+        assert element.is_displayed(), "Home screen not displayed after login"
