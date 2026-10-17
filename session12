@@ -1,0 +1,149 @@
+"""
+Flipkart-style Mobile Automation Assignment
+-------------------------------------------
+Tasks:
+1. Verify home screen after app launch.
+2. Data-driven login with multiple credentials.
+3. Search for item and add to cart.
+4. Capture screenshots on failure and log major steps.
+5. Run tests in sequence with pytest (HTML report via pytest-html).
+"""
+
+import os
+import pytest
+import logging
+from datetime import datetime
+from appium import webdriver
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
+# -------------------------------
+# Logging setup
+# -------------------------------
+logging.basicConfig(filename="testlog.log",
+                    level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+# -------------------------------
+# Base Test Setup
+# -------------------------------
+class BaseMobileTest:
+    def setup_method(self):
+        desired_caps = {
+            "platformName": "Android",
+            "deviceName": "AndroidDevice",  # replace with adb device name
+            "automationName": "UiAutomator2",
+            "app": os.path.abspath("flipkart.apk")  # path to Flipkart-style APK
+        }
+        self.driver = webdriver.Remote("http://127.0.0.1:4723/wd/hub", desired_caps)
+        self.driver.implicitly_wait(10)
+        logging.info("App launched successfully")
+
+    def teardown_method(self, method):
+        if hasattr(self, "driver") and self.driver:
+            self.driver.quit()
+
+
+# -------------------------------
+# Page Objects
+# -------------------------------
+class LoginPage:
+    def __init__(self, driver):
+        self.driver = driver
+
+    def enter_username(self, username):
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/username").send_keys(username)
+
+    def enter_password(self, password):
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/password").send_keys(password)
+
+    def tap_login(self):
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/login_button").click()
+
+
+class HomePage:
+    def __init__(self, driver):
+        self.driver = driver
+
+    def is_home_displayed(self):
+        return self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/home").is_displayed()
+
+    def search_item(self, item):
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/search_box").send_keys(item)
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/search_button").click()
+
+
+class CartPage:
+    def __init__(self, driver):
+        self.driver = driver
+
+    def add_first_result_to_cart(self):
+        first_result = self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Bluetooth headphones']")
+        first_result.click()
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/add_to_cart").click()
+
+    def get_cart_count(self):
+        return self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/cart_count").text
+
+
+# -------------------------------
+# Utility: Screenshot on failure
+# -------------------------------
+def capture_screenshot(driver, test_name):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"screenshots/{test_name}_{timestamp}.png"
+    os.makedirs("screenshots", exist_ok=True)
+    driver.save_screenshot(filename)
+    logging.error(f"Screenshot captured: {filename}")
+
+
+# -------------------------------
+# Tests
+# -------------------------------
+class TestFlipkart(BaseMobileTest):
+
+    def test_home_screen(self):
+        home = HomePage(self.driver)
+        assert home.is_home_displayed(), "Home screen not displayed"
+        logging.info("Home screen verified")
+
+    @pytest.mark.parametrize("username,password", [
+        ("testuser1", "password1"),
+        ("testuser2", "password2")
+    ])
+    def test_login(self, username, password):
+        login = LoginPage(self.driver)
+        login.enter_username(username)
+        login.enter_password(password)
+        login.tap_login()
+        home = HomePage(self.driver)
+        assert home.is_home_displayed(), f"Login failed for {username}"
+        logging.info(f"Login successful for {username}")
+
+    def test_search_and_add_to_cart(self):
+        home = HomePage(self.driver)
+        home.search_item("Bluetooth headphones")
+        cart = CartPage(self.driver)
+        cart.add_first_result_to_cart()
+        count = cart.get_cart_count()
+        assert count == "1", "Cart count not updated"
+        logging.info("Item added to cart, cart count updated")
+
+    def test_logout(self):
+        self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/logout").click()
+        login_button = self.driver.find_element(AppiumBy.ID, "com.flipkart.app:id/login_button")
+        assert login_button.is_displayed(), "Logout failed"
+        logging.info("Logout successful")
+
+
+# -------------------------------
+# Pytest Hooks for Screenshot on Failure
+# -------------------------------
+def pytest_runtest_makereport(item, call):
+    if call.when == "call" and call.excinfo is not None:
+        driver = item.instance.driver if hasattr(item.instance, "driver") else None
+        if driver:
+            capture_screenshot(driver, item.name)
