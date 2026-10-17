@@ -1,0 +1,38 @@
+"""
+Mobile Automation Cloud Assignment
+----------------------------------
+Tasks:
+1. Connect Android phone, enable USB debugging, verify with adb devices.
+2. Install APK (Spotify/Zomato) using adb install.
+3. Appium test: launch Zomato app and take screenshot.
+4. Run test on BrowserStack cloud device.
+5. Generate desired capabilities JSON for LambdaTest (Samsung Galaxy S21).
+"""
+
+import os
+from appium import webdriver
+from appium.webdriver.common.appiumby import AppiumBy
+
+# -------------------------------
+# Task 1: adb devices (manual step)
+# -------------------------------
+# Run in terminal:
+#   adb devices
+# Verify your device appears in the list.
+
+# -------------------------------
+# Task 2: Install APK (manual step)
+# -------------------------------
+# Run in terminal:
+#   adb install /path/to/zomato.apk
+# Confirm app appears on device.
+
+# -------------------------------
+# Task 3: Local Appium Test (Zomato screenshot)
+# -------------------------------
+def test_zomato_screenshot_local():
+    desired_caps = {
+        "platformName": "Android",
+        "deviceName": "AndroidDevice",  # replace with adb device name
+        "automationName": "UiAutomator2",
+        "appPackage": "com.application.zomato",  # replace with actual Zomato package
